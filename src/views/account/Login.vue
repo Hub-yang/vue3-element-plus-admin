@@ -3,7 +3,7 @@
     <div class="form-wrap">
       <ul class="menu-tab">
         <li @click="toggleMenu(item.type)" :class="{ current: item.type == data.current_menu }"
-          v-for="(item, index) in data.tab_menu" :key="item.type">
+          v-for="item in data.tab_menu" :key="item.type">
           {{ item.label }}</li>
       </ul>
       <el-form ref="form" :model="data.form" :rules="data.form_rules">
