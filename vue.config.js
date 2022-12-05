@@ -1,7 +1,10 @@
 const path = require("path")
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 const AutoImport = require("unplugin-auto-import/webpack")
 const Components = require("unplugin-vue-components/webpack")
 const { ElementPlusResolver } = require("unplugin-vue-components/resolvers")
+// 自动导入elementPlus：组件+样式
+const ElementPlus = require("unplugin-element-plus/webpack")
 module.exports = {
   // 基本路径
   publicPath: process.env.NODE_ENV === "production" ? "" : "./",
@@ -15,12 +18,15 @@ module.exports = {
   chainWebpack: (config) => {},
   configureWebpack: (config) => {
     config.plugins.push(
+      new NodePolyfillPlugin(),
       AutoImport({
+        imports: ["vue", "vue-router"],
         resolvers: [ElementPlusResolver()],
       }),
       Components({
         resolvers: [ElementPlusResolver()],
-      })
+      }),
+      ElementPlus({})
     )
   },
   // 生产环境是否生成 sourceMap 文件
@@ -52,13 +58,13 @@ module.exports = {
     host: "0.0.0.0",
     port: 8080,
     proxy: {
-      "/devApi": {
-        target: "http://v3.web-jshtml.cn/api",
+      [process.env.VUE_APP_API]: {
+        target: process.env.VUE_APP_DEV_TARGET,
         changeOrigin: true,
         ws: false,
         secure: false,
         pathRewrite: {
-          "^/devApi": "",
+          [`^${process.env.VUE_APP_API}`]: "",
         },
       },
     },
