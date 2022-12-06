@@ -50,7 +50,7 @@ import {
   validate_code,
 } from "../../utils/validate"
 import { GetCode, Register, Login, ErrorHttp } from "../../api/account"
-import { ElMessage } from "element-plus";
+import sha1 from "sha1"
 
 const account_form = ref(null)
 // 自定义校验规则
@@ -177,14 +177,14 @@ const handlerGetCode = () => {
   // 获取验证码接口
   GetCode(requestData)
     .then((res) => {
+      // 执行倒计时
+      countDown(10)
       // 用户名存在
       if (res.resCode === 1024) {
         ElMessage.error(res.message)
         return false
       }
       ElMessage({ message: res.message, type: "success", duration: 4000 })
-      // 执行倒计时
-      countDown(10)
     })
     .catch((err) => {
       data.code_button_loading = false
@@ -232,7 +232,7 @@ const register = () => {
   // 请求参数
   const requestData = {
     username: data.form.username,
-    password: data.form.password,
+    password: sha1(data.form.password),
     code: data.form.code
   }
   // 注册接口
@@ -251,7 +251,7 @@ const login = () => {
   // 请求参数
   const requestData = {
     username: data.form.username,
-    password: data.form.password,
+    password: sha1(data.form.password),
     code: data.form.code
   }
   Login(requestData).then(res => {
