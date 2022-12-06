@@ -1,14 +1,20 @@
 <template>
-  <el-menu router default-active="/console" background-color="#344a5f" text-color="#fff" active-text-color="#ffd04b">
+  <!-- logo -->
+  <h1 class="logo"><img :src="data.logo" alt="logo"></h1>
+  <!-- 导航 -->
+  <el-menu router :default-active="currentPath" background-color="#344a5f" text-color="#fff" active-text-color="#fff">
     <template v-for="router in routers" :key="router.path">
       <template v-if="!router.hidden">
-        <!-- 一级菜单没有children -->
+        <!-- 一级菜单 -->
         <el-menu-item v-if="hasOnlyChild(router.children)" :index="router.children[0].path">
+          <svg-icon :icon-name="(router.meta && router.meta.icon)" class-name="aside-menu-svg" />
           <template #title>{{ (router.children[0].meta && router.children[0].meta.title) }}</template>
         </el-menu-item>
         <!-- 子级菜单 -->
         <el-sub-menu v-else :index="router.path">
-          <template #title>{{ (router.meta && router.meta.title) }}</template>
+          <template #title> <svg-icon :icon-name="(router.meta && router.meta.icon)" class-name="aside-menu-svg" />{{
+              (router.meta && router.meta.title)
+          }}</template>
           <template v-for="child in router.children" :key="child.path">
             <el-menu-item v-if="!child.hidden" :index="child.path">{{ child.meta && child.meta.title }}</el-menu-item>
           </template>
@@ -21,7 +27,12 @@
 
 <script setup>
 const { options } = useRouter()
+const { path } = useRoute()
 const routers = options.routes
+
+const data = reactive({
+  logo: require("@/assets/images/logo.png")
+})
 
 // 扁平单个子级菜单
 const hasOnlyChild = (children) => {
@@ -37,10 +48,19 @@ const hasOnlyChild = (children) => {
   } else {
     return false
   }
-
 }
+
+// 监听路由变化，绑定default-active，解决刷新页面高亮丢失
+const currentPath = computed(() => path)
 </script>
 
 <style scoped lang="scss">
+.logo {
+  padding: 20px 0;
+  border-bottom: 1px solid #2d4153;
 
+  img {
+    margin: auto;
+  }
+}
 </style>

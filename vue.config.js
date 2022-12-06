@@ -3,6 +3,10 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 const AutoImport = require("unplugin-auto-import/webpack")
 const Components = require("unplugin-vue-components/webpack")
 const { ElementPlusResolver } = require("unplugin-vue-components/resolvers")
+
+function resolve(dir) {
+  return path.join(__dirname, dir)
+}
 // 自动导入elementPlus：组件+样式
 const ElementPlus = require("unplugin-element-plus/webpack")
 module.exports = {
@@ -15,7 +19,37 @@ module.exports = {
   /** vue3.0内置了webpack所有东西，
    * webpack配置,see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
    **/
-  chainWebpack: (config) => {},
+  chainWebpack: (config) => {
+    // 解析svg图标文件为symbol
+    // //cli 4.x写法
+    const svgRule = config.module.rule("svg") // 将默认规则赋值给subRule变量
+    svgRule.uses.clear() //删除已有的所有规则
+    // // 添加要替换的规则
+    // svgRule
+    //   .use("svg-sprite-loader") //注册包
+    //   .loader("svg-sprite-loader") //载入包
+    //   .options({
+    //     symbolId: "icon-[name]", //定义symbol元素id
+    //     include: ["./src/components/svgIcon/icon"],
+    //   })
+
+    // cli5.x写法
+    config.module
+      .rule("svg")
+      .exclude.add(resolve("./src/components/svgIcon/icon"))
+      .end()
+    config.module
+      .rule("icons")
+      .test(/.svg$/)
+      .include.add(resolve("./src/components/svgIcon/icon"))
+      .end()
+      .use("svg-sprite-loader")
+      .loader("svg-sprite-loader")
+      .options({
+        symbolId: "icon-[name]",
+      })
+      .end()
+  },
   configureWebpack: (config) => {
     config.plugins.push(
       new NodePolyfillPlugin(),

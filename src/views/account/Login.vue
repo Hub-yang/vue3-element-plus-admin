@@ -316,8 +316,12 @@ onBeforeUnmount(() => {
       font-size: 14px;
     }
 
-    :deep(.el-row) {
-      width: 100%;
+    // :deep(.el-row) {
+    //   width: 100%;
+    // }
+
+    :deep(.el-form-item__content) {
+      display: block;
     }
   }
 }

@@ -6,6 +6,8 @@ import store from "./store"
 import "./styles/normalize.scss"
 import * as ElementPlusIconsVue from "@element-plus/icons-vue"
 import SvgIcon from "./components/svgIcon/Index.vue"
+// 批量导入.svg文件
+import "./components/svgIcon/svg"
 
 const app = createApp(App)
 // 全局注册icon
