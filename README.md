@@ -55,3 +55,7 @@ configureWebpack: (config) => {
 #### 2-1.创建 feature-account 分支，开发登录注册**业务**
 
 -  **密码加密第三方包：sha1、md5、base64**
+
+- **处理cookies包：js-cookie**
+- **关闭elementplus校验规则控制台警告**
+  - node_modules----element-plus----es----utils----vue----error.mjs，将console.warn(error)注释

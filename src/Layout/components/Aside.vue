@@ -2,7 +2,8 @@
   <!-- logo -->
   <h1 class="logo"><img :src="data.logo" alt="logo"></h1>
   <!-- 导航 -->
-  <el-menu router :default-active="currentPath" background-color="#344a5f" text-color="#fff" active-text-color="#fff">
+  <el-menu :collapse="data.collapse" router :default-active="currentPath" background-color="#344a5f" text-color="#fff"
+    active-text-color="#fff">
     <template v-for="router in routers" :key="router.path">
       <template v-if="!router.hidden">
         <!-- 一级菜单 -->
@@ -12,9 +13,10 @@
         </el-menu-item>
         <!-- 子级菜单 -->
         <el-sub-menu v-else :index="router.path">
-          <template #title> <svg-icon :icon-name="(router.meta && router.meta.icon)" class-name="aside-menu-svg" />{{
-              (router.meta && router.meta.title)
-          }}</template>
+          <template #title>
+            <svg-icon :icon-name="(router.meta && router.meta.icon)" class-name="aside-menu-svg" />
+            <span>{{ (router.meta && router.meta.title) }}</span>
+          </template>
           <template v-for="child in router.children" :key="child.path">
             <el-menu-item v-if="!child.hidden" :index="child.path">{{ child.meta && child.meta.title }}</el-menu-item>
           </template>
@@ -27,11 +29,13 @@
 
 <script setup>
 const { options } = useRouter()
+const { state } = useStore()
 const { path } = useRoute()
 const routers = options.routes
 
 const data = reactive({
-  logo: require("@/assets/images/logo.png")
+  logo: computed(() => state.app.collapse ? require("@/assets/images/logo-min.png") : require("@/assets/images/logo.png")),
+  collapse: computed(() => state.app.collapse)
 })
 
 // 扁平单个子级菜单

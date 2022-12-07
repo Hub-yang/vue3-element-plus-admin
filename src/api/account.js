@@ -34,3 +34,11 @@ export function Login(data = {}) {
     data,
   })
 }
+
+// 退出登录
+export function Logout() {
+  return service({
+    method: "POST",
+    url: "/logout/",
+  })
+}

@@ -15,11 +15,13 @@ export default {
 </script>
 <style scoped lang="scss">
 .container {
+
   // vue3深度选择器
   :deep(.el-button) {
     background-color: skyblue;
   }
 }
+
 // 组件中定义全局样式
 :global(body) {
   background-color: skyblue;

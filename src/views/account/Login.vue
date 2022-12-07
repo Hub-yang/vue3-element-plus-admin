@@ -51,6 +51,8 @@ import {
 } from "../../utils/validate"
 import { GetCode, Register, Login, ErrorHttp } from "../../api/account"
 import sha1 from "sha1"
+const { dispatch } = useStore()
+const router = useRouter()
 
 const account_form = ref(null)
 // 自定义校验规则
@@ -254,14 +256,17 @@ const login = () => {
     password: sha1(data.form.password),
     code: data.form.code
   }
-  Login(requestData).then(res => {
-    ElMessage({ message: res.message, type: "success", duration: 2000 })
-    // 重置
-    reset()
-  }).catch(err => {
-    data.submit_button_loading = false
-    throw new Error(`Login()接口错误：${err}`)
-  })
+  dispatch("app/loginAction", requestData)
+    .then(res => {
+      ElMessage({ message: res.message, type: "success", duration: 2000 })
+      router.push("/console")
+      // 重置
+      reset()
+    })
+    .catch(err => {
+      data.submit_button_loading = false
+      throw new Error(`Login()接口错误：${err}`)
+    })
 }
 
 // 表单重置

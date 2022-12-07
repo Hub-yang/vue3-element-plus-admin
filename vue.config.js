@@ -51,10 +51,17 @@ module.exports = {
       .end()
   },
   configureWebpack: (config) => {
+    config.resolve = {
+      extensions: [".js", ".json", ".vue"], //自动添加文件名后缀
+      // 配置别名
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    }
     config.plugins.push(
       new NodePolyfillPlugin(),
       AutoImport({
-        imports: ["vue", "vue-router"],
+        imports: ["vue", "vuex", "vue-router"],
         resolvers: [ElementPlusResolver()],
       }),
       Components({
