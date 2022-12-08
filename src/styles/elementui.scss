@@ -18,3 +18,35 @@
     background-color: #f56c6c !important;
   }
 }
+
+// 上传文件
+
+.avatar-uploader .avatar {
+  width: 150px;
+  height: 150px;
+  display: block;
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  transition: var(--el-transition-duration-fast);
+
+  &:hover {
+    border-color: var(--el-color-primary);
+  }
+}
+
+// 日期选择器层级
+.el-popper {
+  z-index: 10002 !important;
+}

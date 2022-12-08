@@ -10,7 +10,7 @@
     <div class="wrap">
       <div class="user_info">
         <div class="face_info">
-          <img src="../../assets/images/logo-min.png" alt="avater">
+          <img src="../../assets/images/logo-min.png" alt="avater" />
           <span class="name">{{ username }}</span>
         </div>
         <span class="logout" @click="logout">
@@ -31,33 +31,30 @@ const switchAside = () => {
 const username = ref(state.app.username)
 
 const logout = () => {
-  ElMessageBox.confirm(
-    '确认退出管理后台?',
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      showClose: false,
-      closeOnClickModal: false,
-      type: 'warning',
-    }
-  )
+  ElMessageBox.confirm("确认退出管理后台?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    showClose: false,
+    closeOnClickModal: false,
+    type: "warning",
+  })
     .then(() => {
-      dispatch("app/logoutAction").then(res => {
-        ElMessage({ message: res.message, type: "success", duration: 2000 })
-        router.replace("/login")
-      }).catch(err => {
-        throw new Error(`Logout()接口错误：${err}`)
-      })
+      dispatch("app/logoutAction")
+        .then((res) => {
+          ElMessage({ message: res.message, type: "success", duration: 2000 })
+          router.replace("/login")
+        })
+        .catch((err) => {
+          throw new Error(`Logout()接口错误：${err}`)
+        })
     })
     .catch(() => {
       ElMessage({
-        type: 'info',
-        message: '取消退出',
-        duration: 2000
+        type: "info",
+        message: "取消退出",
+        duration: 2000,
       })
     })
-
 }
 </script>
 
@@ -78,7 +75,6 @@ const logout = () => {
     align-items: center;
 
     .face_info {
-
       span,
       img {
         display: inline-block;
