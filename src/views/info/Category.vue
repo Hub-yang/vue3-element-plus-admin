@@ -6,6 +6,7 @@
   <el-row :gutter="20">
     <el-col :span="7">
       <el-tree
+        ref="categoryTree"
         :data="data.treeData"
         :props="data.defaultProps"
         @node-click="handleNodeClick"
@@ -19,7 +20,7 @@
               type="danger"
               round
               size="small"
-              @click="handlerCategory('childCategoryAdd')"
+              @click="handlerCategory('childCategoryAdd', node)"
               >添加子级</el-button
             >
             <el-button
@@ -45,19 +46,22 @@
         <el-form-item label="父级分类名称：">
           <el-input
             style="width: 20%"
-            v-model="data.parentCategory"
+            v-model.trim="data.parentCategory"
             :disabled="config[config.type].parentDisabled"
           ></el-input>
         </el-form-item>
         <el-form-item label="子级分类名称：" v-if="config[config.type].subShow">
           <el-input
             style="width: 20%"
-            v-model="data.subCategory"
+            v-model.trim="data.subCategory"
             :disabled="config[config.type].subDisabled"
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="danger" :loading="data.buttonLoading"
+          <el-button
+            type="danger"
+            :loading="data.buttonLoading"
+            @click="handlerSubmit"
             >确定</el-button
           >
         </el-form-item>
@@ -67,26 +71,19 @@
 </template>
 
 <script setup>
+import {
+  firstCategoryAdd,
+  getCategory,
+  childCategoryAdd,
+  categoryEdit,
+} from "@/api/info"
+import { ElMessage } from "element-plus"
 const data = reactive({
-  treeData: [
-    {
-      label: "Level 1",
-      children: [
-        {
-          label: "Level 1-1",
-          children: [
-            {
-              label: "Level 1-1-1",
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  treeData: [],
 
   defaultProps: {
     children: "children",
-    label: "label",
+    label: "category_name",
   },
   // 父级分类名称
   parentCategory: "父级内容演示",
@@ -94,6 +91,10 @@ const data = reactive({
   subCategory: "子级内容演示",
   // 确定按钮加载状态
   buttonLoading: false,
+  // 添加/编辑子级时存储的父级信息
+  parentCategoryData: null,
+  // 编辑子级时存储的子级信息
+  subCategoryData: null,
 })
 
 const config = reactive({
@@ -124,24 +125,37 @@ const config = reactive({
     parentDisabled: false,
     subDisabled: true,
     subShow: false,
+    create: ["parentCategory"],
   },
   childCategoryEdit: {
     title: "编辑子级分类",
     parentDisabled: true,
     subDisabled: false,
     subShow: true,
+    create: ["parentCategory", "subCategory"],
   },
 })
 
 const handleNodeClick = (data) => {}
 
+const categoryTree = ref(null)
 // 添加一级分类
 const handlerCategory = (type, nodeData) => {
   config.type = type
+  // 判断操作类型
+  if (type === "childCategoryEdit") {
+    // 保存子级信息
+    data.subCategoryData = nodeData || null
+    data.parentCategoryData = nodeData.parent || null
+  } else {
+    // 添加子级时保存父级信息
+    data.parentCategoryData = nodeData || null
+  }
   // 删除内容，还原内容
   handlerInputValue()
 }
 
+// 删除还原文本框内容
 const handlerInputValue = () => {
   // 获取删除数据的对象
   const clearObject = config[config.type].clear
@@ -154,9 +168,141 @@ const handlerInputValue = () => {
   const createObject = config[config.type].create
   if (createObject && createObject.length > 0) {
     createObject.forEach((item) => {
-      data[item] = "11"
+      // 还原为保存的信息
+      data[item] = data[`${item}Data`].data.category_name
     })
   }
+}
+
+const handlerSubmit = () => {
+  // 判断操作
+  if (config.type === "firstCategoryAdd") {
+    handlerFirstCategoryAdd()
+  }
+  if (config.type === "childCategoryAdd") {
+    handlerChildCategoryAdd()
+  }
+  if (
+    config.type === "childCategoryEdit" ||
+    config.type === "parentCategoryEdit"
+  ) {
+    handlerCategoryEdit()
+  }
+}
+onBeforeMount(() => {
+  handlerGetCategory()
+})
+
+// 获取分类列表
+const handlerGetCategory = () => {
+  getCategory().then((res) => {
+    console.log(res.data)
+    data.treeData = res.data || []
+  })
+}
+
+// 添加父级分类
+const handlerFirstCategoryAdd = () => {
+  // 内容为空时提示
+  if (!data.parentCategory) {
+    ElMessage.error("父级分类名称不能为空")
+    return false
+  }
+  // 按钮加载状态
+  data.buttonLoading = true
+  // 执行接口
+  firstCategoryAdd({ categoryName: data.parentCategory }).then(
+    (res) => {
+      data.buttonLoading = false
+      ElMessage({ message: res.message, type: "success", duration: 2000 })
+      data.parentCategory = ""
+      // 追加新增数据，刷新视图
+      categoryTree.value.append(res.data)
+    },
+    (err) => {
+      data.buttonLoading = false
+      throw new Error("handlerFirstCategoryAdd():接口报错" + err)
+    }
+  )
+}
+
+// 添加子级分类
+const handlerChildCategoryAdd = () => {
+  if (!data.subCategory) {
+    ElMessage.error("子级分类名称不能为空")
+    return false
+  }
+  data.buttonLoading = true
+  // 请求接口
+  childCategoryAdd({
+    categoryName: data.subCategory,
+    parentId: data.parentCategoryData.data.id,
+  }).then(
+    (res) => {
+      data.buttonLoading = false
+      ElMessage({ message: res.message, type: "success", duration: 2000 })
+      data.subCategory = ""
+      // 追加新增数据，刷新视图
+      categoryTree.value.append(res.data, data.parentCategoryData)
+    },
+    (err) => {
+      data.buttonLoading = false
+      throw new Error("handlerFirstCategoryAdd():接口报错" + err)
+    }
+  )
+}
+
+// 编辑分类
+const handlerCategoryEdit = () => {
+  if (!data.subCategory || !data.parentCategory) {
+    const message = config.type === "parentCategoryEdit" ? "父级" : "子级"
+    ElMessage.error(message + "分类不能为空")
+    return false
+  }
+  // 拿到存储的节点信息
+  const nodeParent = data.parentCategoryData
+    ? data.parentCategoryData.data
+    : null
+  const nodeSub = data.subCategoryData ? data.subCategoryData.data : null
+
+  // 判断编辑内容
+  if (
+    config.type === "parentCategoryEdit" &&
+    nodeParent.category_name == data.parentCategory
+  ) {
+    ElMessage.warning("请输入新的分类名称")
+    return false
+  }
+  if (
+    config.type === "childCategoryEdit" &&
+    nodeSub.category_name == data.subCategory
+  ) {
+    ElMessage.warning("请输入新的分类名称")
+    return false
+  }
+
+  data.buttonLoading = true
+  // 请求接口
+  categoryEdit({
+    categoryName:
+      config.type === "parentCategoryEdit"
+        ? data.parentCategory
+        : data.subCategory,
+    id: config.type === "parentCategoryEdit" ? nodeParent.id : nodeSub.id,
+  }).then(
+    (res) => {
+      data.buttonLoading = false
+      ElMessage({ message: res.message, type: "success", duration: 2000 })
+      // 同步更新
+      const nodeData =
+        config.type === "parentCategoryEdit" ? nodeParent : nodeSub
+      nodeData.category_name = res.data.category_name
+    },
+    (err) => {
+      data.buttonLoading = false
+      throw new Error("categoryEdit():接口报错" + err)
+    }
+  )
 }
 </script>
 

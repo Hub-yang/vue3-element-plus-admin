@@ -51,6 +51,8 @@ module.exports = {
       .end()
   },
   configureWebpack: (config) => {
+    config.devtool =
+      process.env.NODE_ENV === "development" ? "source-map" : undefined
     config.resolve = {
       extensions: [".js", ".json", ".vue"], //自动添加文件名后缀
       // 配置别名

@@ -2,39 +2,54 @@
   <div id="login">
     <div class="form-wrap">
       <ul class="menu-tab">
-        <li @click="toggleMenu(item.type)" :class="{ current: item.type == data.current_menu }"
-          v-for="item in data.tab_menu" :key="item.type">
+        <li
+          @click="toggleMenu(item.type)"
+          :class="{ current: item.type == data.current_menu }"
+          v-for="item in data.tab_menu"
+          :key="item.type"
+        >
           {{ item.label }}
         </li>
       </ul>
       <el-form ref="account_form" :model="data.form" :rules="data.form_rules">
         <el-form-item prop="username">
           <label class="form-label">用户名</label>
-          <el-input v-model="data.form.username" />
+          <el-input v-model.trim="data.form.username" />
         </el-form-item>
         <el-form-item prop="password">
           <label class="form-label">密码</label>
-          <el-input v-model="data.form.password" />
+          <el-input v-model.trim="data.form.password" />
         </el-form-item>
         <el-form-item prop="passwords" v-if="data.current_menu == 'register'">
           <label class="form-label">确认密码</label>
-          <el-input v-model="data.form.passwords" />
+          <el-input v-model.trim="data.form.passwords" />
         </el-form-item>
         <el-form-item prop="code">
           <label class="form-label">验证码</label>
           <el-row :gutter="10">
             <el-col :span="14">
-              <el-input v-model="data.form.code"></el-input>
+              <el-input v-model.trim="data.form.code"></el-input>
             </el-col>
             <el-col :span="10">
-              <el-button class="el-button-block" type="success" :disabled="data.code_button_disabled"
-                :loading="data.code_button_loading" @click="handlerGetCode">{{ data.code_button_text }}</el-button>
+              <el-button
+                class="el-button-block"
+                type="success"
+                :disabled="data.code_button_disabled"
+                :loading="data.code_button_loading"
+                @click="handlerGetCode"
+                >{{ data.code_button_text }}</el-button
+              >
             </el-col>
           </el-row>
         </el-form-item>
         <el-form-item>
-          <el-button type="danger" class="el-button-block" :disabled="data.submit_button_disabled"
-            :loading="data.submit_button_loading" @click="submitForm">
+          <el-button
+            type="danger"
+            class="el-button-block"
+            :disabled="data.submit_button_disabled"
+            :loading="data.submit_button_loading"
+            @click="submitForm"
+          >
             {{ data.current_menu === "login" ? "登录" : "注册" }}
           </el-button>
         </el-form-item>
@@ -49,7 +64,7 @@ import {
   validate_password,
   validate_code,
 } from "../../utils/validate"
-import { GetCode, Register, Login, ErrorHttp } from "../../api/account"
+import { GetCode, Register, ErrorHttp } from "../../api/account"
 import sha1 from "sha1"
 const { dispatch } = useStore()
 const router = useRouter()
@@ -235,17 +250,19 @@ const register = () => {
   const requestData = {
     username: data.form.username,
     password: sha1(data.form.password),
-    code: data.form.code
+    code: data.form.code,
   }
   // 注册接口
-  Register(requestData).then(res => {
-    ElMessage({ message: res.message, type: "success", duration: 2000 })
-    // 注册成功重置
-    reset()
-  }).catch(err => {
-    data.submit_button_loading = false
-    throw new Error("Register()接口错误:" + err)
-  })
+  Register(requestData)
+    .then((res) => {
+      ElMessage({ message: res.message, type: "success", duration: 2000 })
+      // 注册成功重置
+      reset()
+    })
+    .catch((err) => {
+      data.submit_button_loading = false
+      throw new Error("Register()接口错误:" + err)
+    })
 }
 
 const login = () => {
@@ -254,16 +271,16 @@ const login = () => {
   const requestData = {
     username: data.form.username,
     password: sha1(data.form.password),
-    code: data.form.code
+    code: data.form.code,
   }
   dispatch("app/loginAction", requestData)
-    .then(res => {
+    .then((res) => {
       ElMessage({ message: res.message, type: "success", duration: 2000 })
       router.push("/console")
       // 重置
       reset()
     })
-    .catch(err => {
+    .catch((err) => {
       data.submit_button_loading = false
       throw new Error(`Login()接口错误：${err}`)
     })
