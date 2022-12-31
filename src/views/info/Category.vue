@@ -4,8 +4,9 @@
   >
   <hr class="spacing-hr" />
   <el-row :gutter="20">
-    <el-col :span="7">
+    <el-col :span="10">
       <el-tree
+        node-key="id"
         ref="categoryTree"
         :data="data.treeData"
         :props="data.defaultProps"
@@ -35,12 +36,17 @@
               "
               >编辑</el-button
             >
-            <el-button round size="small">删除</el-button>
+            <el-button
+              round
+              size="small"
+              @click="handlerCategory('deleteCategory', node)"
+              >删除</el-button
+            >
           </span>
         </template>
       </el-tree>
     </el-col>
-    <el-col :span="17">
+    <el-col :span="14">
       <h4 class="column">{{ config[config.type].title }}</h4>
       <el-form label-width="140px">
         <el-form-item label="父级分类名称：">
@@ -76,8 +82,10 @@ import {
   getCategory,
   childCategoryAdd,
   categoryEdit,
+  categoryDel,
 } from "@/api/info"
-import { ElMessage } from "element-plus"
+import { ElMessage, ElMessageBox } from "element-plus"
+
 const data = reactive({
   treeData: [],
 
@@ -104,6 +112,7 @@ const config = reactive({
     parentDisabled: true,
     subDisabled: true,
     subShow: true,
+    clear: ["parentCategory", "subCategory"],
   },
   firstCategoryAdd: {
     title: "添加父级分类",
@@ -141,7 +150,7 @@ const handleNodeClick = (data) => {}
 const categoryTree = ref(null)
 // 添加一级分类
 const handlerCategory = (type, nodeData) => {
-  config.type = type
+  config.type = type === "deleteCategory" ? "default" : type
   // 判断操作类型
   if (type === "childCategoryEdit") {
     // 保存子级信息
@@ -151,6 +160,9 @@ const handlerCategory = (type, nodeData) => {
     // 添加子级时保存父级信息
     data.parentCategoryData = nodeData || null
   }
+
+  // 删除分类
+  type === "deleteCategory" && handlerDeleteConfirm()
   // 删除内容，还原内容
   handlerInputValue()
 }
@@ -196,7 +208,6 @@ onBeforeMount(() => {
 // 获取分类列表
 const handlerGetCategory = () => {
   getCategory().then((res) => {
-    console.log(res.data)
     data.treeData = res.data || []
   })
 }
@@ -303,6 +314,44 @@ const handlerCategoryEdit = () => {
       throw new Error("categoryEdit():接口报错" + err)
     }
   )
+  // 强制刷新
+  window.location.reload()
+}
+
+// 删除分类
+const handlerDeleteConfirm = () => {
+  ElMessageBox.confirm("确认删除该分类吗，删除后无法恢复", "提示", {
+    confirmButtonText: "确认",
+    cancelButtonText: "取消",
+    showClose: true,
+    closeOnClickModal: false,
+    closeOnPressEscape: false,
+    type: "warning",
+    beforeClose(action, instance, done) {
+      if (action === "confirm") {
+        // 加载状态
+        instance.confirmButtonLoading = true
+        // 调用删除分类接口
+        categoryDel({ categoryId: data.parentCategoryData.data.id })
+          .then((res) => {
+            ElMessage.success(res.message)
+            instance.confirmButtonLoading = false
+            done()
+            // 删除节点，同步更新
+            categoryTree.value.remove(data.parentCategoryData)
+            // 强制刷新
+            window.location.reload()
+          })
+          .catch((err) => {
+            instance.confirmButtonLoading = false
+            done()
+            throw new Error("categoryDel():接口报错" + err)
+          })
+      } else {
+        done()
+      }
+    },
+  })
 }
 </script>
 

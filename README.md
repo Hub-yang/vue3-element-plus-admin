@@ -60,3 +60,10 @@ configureWebpack: (config) => {
 - **处理cookies包：js-cookie**
 - **关闭elementplus校验规则控制台警告**
   - node_modules----element-plus----es----utils----vue----error.mjs，将console.warn(error)注释
+
+
+
+
+
+- 知识点：if单一判断执行的简单写法：`(type==='test') && handlerFn()`
+- 

@@ -35,3 +35,12 @@ export function categoryEdit(data = {}) {
     data,
   })
 }
+
+// 删除分类接口
+export function categoryDel(data = {}) {
+  return service({
+    method: "POST",
+    url: "/news/deleteCategory/",
+    data,
+  })
+}
