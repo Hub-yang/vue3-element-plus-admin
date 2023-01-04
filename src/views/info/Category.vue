@@ -8,7 +8,7 @@
       <el-tree
         node-key="id"
         ref="categoryTree"
-        :data="data.treeData"
+        :data="treeData.categoryOptions"
         :props="data.defaultProps"
         @node-click="handleNodeClick"
         default-expand-all
@@ -79,16 +79,20 @@
 <script setup>
 import {
   firstCategoryAdd,
-  getCategory,
   childCategoryAdd,
   categoryEdit,
   categoryDel,
 } from "@/api/info"
 import { ElMessage, ElMessageBox } from "element-plus"
+import { categoryHook } from "@/hooks/infoHook"
+const { infoData: treeData, handlerGetCategory } = categoryHook()
+
+onBeforeMount(() => {
+  // 获取分类列表
+  handlerGetCategory()
+})
 
 const data = reactive({
-  treeData: [],
-
   defaultProps: {
     children: "children",
     label: "category_name",
@@ -200,16 +204,6 @@ const handlerSubmit = () => {
   ) {
     handlerCategoryEdit()
   }
-}
-onBeforeMount(() => {
-  handlerGetCategory()
-})
-
-// 获取分类列表
-const handlerGetCategory = () => {
-  getCategory().then((res) => {
-    data.treeData = res.data || []
-  })
 }
 
 // 添加父级分类

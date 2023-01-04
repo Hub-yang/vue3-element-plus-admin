@@ -1,14 +1,12 @@
 <template>
   <el-form label-width="150px">
     <el-form-item label="信息类别：">
-      <el-select v-model="data.category">
-        <el-option
-          v-for="item in data.categoryOptions"
-          :key="item.value"
-          :value="item.value"
-          :label="item.label"
-        ></el-option>
-      </el-select>
+      <el-cascader
+        clearable
+        v-model="infoData.category"
+        :options="infoData.categoryOptions"
+        :props="infoData.cascaderProps"
+      />
     </el-form-item>
     <el-form-item label="信息标题：">
       <el-input v-model="data.title"></el-input>
@@ -43,8 +41,15 @@
 
 <script setup>
 import WangEditor from "wangeditor"
+import { categoryHook } from "@/hooks/infoHook"
+
+const { infoData, handlerGetCategory } = categoryHook()
+
 const editor = ref()
 let editorInstance = null
+onBeforeMount(() => {
+  handlerGetCategory()
+})
 onMounted(() => {
   editorInstance = new WangEditor(editor.value)
   Object.assign(editorInstance.config, {
@@ -55,11 +60,6 @@ onMounted(() => {
   editorInstance.create()
 })
 const data = reactive({
-  category: 0,
-  categoryOptions: [
-    { label: "人工智能", value: 0 },
-    { label: "技术", value: 1 },
-  ],
   title: "",
   imageUrl: "",
   date: "",
