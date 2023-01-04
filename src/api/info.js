@@ -44,3 +44,39 @@ export function categoryDel(data = {}) {
     data,
   })
 }
+
+// 编辑页添加信息
+export function infoCreate(data = {}) {
+  return service({
+    method: "POST",
+    url: "/news/add/",
+    data,
+  })
+}
+
+// 获取信息列表
+export function getTableList(data = {}) {
+  return service({
+    method: "POST",
+    url: "/news/getList/",
+    data,
+  })
+}
+
+// 更新发布状态
+export function updateStatus(data = {}) {
+  return service({
+    method: "POST",
+    url: "/news/status/",
+    data,
+  })
+}
+
+// 删除列表信息
+export function deleteInfo(data = {}) {
+  return service({
+    method: "POST",
+    url: "/news/delete/",
+    data,
+  })
+}
