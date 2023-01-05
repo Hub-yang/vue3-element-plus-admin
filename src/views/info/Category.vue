@@ -83,9 +83,9 @@ import {
   categoryEdit,
   categoryDel,
 } from "@/api/info"
-import { ElMessage, ElMessageBox } from "element-plus"
 import { categoryHook } from "@/hooks/infoHook"
 const { infoData: treeData, handlerGetCategory } = categoryHook()
+const { proxy } = getCurrentInstance()
 
 onBeforeMount(() => {
   // 获取分类列表
@@ -314,37 +314,31 @@ const handlerCategoryEdit = () => {
 
 // 删除分类
 const handlerDeleteConfirm = () => {
-  ElMessageBox.confirm("确认删除该分类吗，删除后无法恢复", "提示", {
-    confirmButtonText: "确认",
-    cancelButtonText: "取消",
-    showClose: true,
-    closeOnClickModal: false,
-    closeOnPressEscape: false,
-    type: "warning",
-    beforeClose(action, instance, done) {
-      if (action === "confirm") {
-        // 加载状态
-        instance.confirmButtonLoading = true
-        // 调用删除分类接口
-        categoryDel({ categoryId: data.parentCategoryData.data.id })
-          .then((res) => {
-            ElMessage.success(res.message)
-            instance.confirmButtonLoading = false
-            done()
-            // 删除节点，同步更新
-            categoryTree.value.remove(data.parentCategoryData)
-            // 强制刷新
-            window.location.reload()
-          })
-          .catch((err) => {
-            instance.confirmButtonLoading = false
-            done()
-            throw new Error("categoryDel():接口报错" + err)
-          })
-      } else {
-        done()
-      }
+  proxy.deleteConfirm({
+    message: "确认删除该分类吗，删除后无法恢复",
+    title: "",
+    thenFun: () => {
+      return handlerDelete()
     },
+  })
+}
+
+const handlerDelete = () => {
+  return new Promise((resolve, reject) => {
+    // 调用删除分类接口
+    categoryDel({ categoryId: data.parentCategoryData.data.id })
+      .then((res) => {
+        ElMessage.success(res.message)
+        // 删除节点，同步更新
+        categoryTree.value.remove(data.parentCategoryData)
+        resolve()
+        // 强制刷新
+        // window.location.reload()
+      })
+      .catch((err) => {
+        reject()
+        throw new Error("categoryDel():接口报错" + err)
+      })
   })
 }
 </script>
