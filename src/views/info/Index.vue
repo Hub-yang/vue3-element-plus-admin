@@ -4,27 +4,36 @@
     <el-col :span="18">
       <el-form :inline="true" label-width="80px">
         <el-form-item label="类别：">
+          <el-cascader
+            clearable
+            v-model="requestData.categoryId"
+            :options="categoryData.categoryOptions"
+            :props="data.cascaderProps"
+          />
+        </el-form-item>
+        <el-form-item label="关键字：">
           <el-select
-            v-model="data.category"
             placeholder="请选择"
-            class="width-160"
+            v-model="requestData.key"
+            class="width-100"
           >
             <el-option
-              v-for="item in data.categoryOptions"
+              v-for="item in data.keywordsOptions"
               :key="item.value"
               :value="item.value"
               :label="item.label"
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="关键字：">
-          <el-select placeholder="请选择" class="width-100"></el-select>
+        <el-form-item>
+          <el-input
+            placeholder="请输入关键字"
+            v-model.trim="requestData.keyword"
+            class="width-180"
+          ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-input placeholder="请输入关键字" class="width-180"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="danger">搜索</el-button>
+          <el-button type="danger" @click="handlerGetList">搜索</el-button>
         </el-form-item>
       </el-form>
     </el-col>
@@ -94,24 +103,34 @@
 <script setup>
 import { getTableList, updateStatus, deleteInfo } from "@/api/info"
 import { getData } from "@/utils/common"
+import { categoryHook } from "@/hooks/infoHook"
 import dayjs from "dayjs"
 const router = useRouter()
 const { proxy } = getCurrentInstance()
+const { infoData: categoryData, handlerGetCategory: getList } = categoryHook()
 
 // 接口参数
 const requestData = reactive({
   pageNumber: 1,
   pageSize: 10,
+  categoryId: [],
+  key: "",
+  keyword: "",
 })
 
 onBeforeMount(() => {
   handlerGetList()
+  getList()
 })
+
 const data = reactive({
-  category: 0,
-  categoryOptions: [
-    { label: "人工智能", value: 0 },
-    { label: "技术", value: 1 },
+  cascaderProps: {
+    label: "category_name",
+    value: "id",
+  },
+  keywordsOptions: [
+    { label: "ID", value: "id" },
+    { label: "标题", value: "title" },
   ],
   tableData: [],
   currentPage: 1,
@@ -145,8 +164,10 @@ const handlerDetailed = () => {
 }
 
 const handlerGetList = () => {
+  // 获取请求参数
+  const request_data = formatParams()
   // 获取信息列表
-  getTableList(requestData)
+  getTableList(request_data)
     .then((res) => {
       // console.log(res)
       const resData = res.data
@@ -156,6 +177,26 @@ const handlerGetList = () => {
     .catch((err) => {
       throw new Error(`getTableList()接口错误：${err}`)
     })
+}
+
+// 格式化请求参数
+const formatParams = () => {
+  // 浅拷贝
+  const data = Object.assign({}, requestData)
+  // 处理categoryId
+  if (data.categoryId.length) {
+    data.categoryId = data.categoryId[data.categoryId.length - 1]
+  } else {
+    delete data.categoryId
+  }
+  // 处理key
+  if (data.key && data.keyword) {
+    data[data.key] = data.keyword
+  }
+  // 删除字段
+  delete data.key
+  delete data.keyword
+  return data
 }
 
 // 日期格式化
